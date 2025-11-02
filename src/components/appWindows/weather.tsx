@@ -34,17 +34,14 @@ export default function WeatherApp() {
 
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-        },
-        () => {
-          setLocation({ lat: 51.4817, lon: 4.9583 });
-        },
-      );
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        });
+
+        console.log(position.coords.latitude, position.coords.longitude);
+      });
     }
   }, []);
 
