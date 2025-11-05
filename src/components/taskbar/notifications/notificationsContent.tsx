@@ -13,53 +13,64 @@ import {
 import { Button } from "@/shadcn/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shadcn/tooltip";
 import { markNotificationAsRead } from "@/actions/notifications/markAsRead";
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useEffect, useTransition } from "react";
 import { Spinner } from "@/shadcn/spinner";
 import { toast } from "sonner";
 import { getAllNotifications } from "@/fetchers/notifications/getAllNotifications";
 import { markAllNotificationsAsRead } from "@/actions/notifications/markAllAsRead";
 import { Kbd, KbdGroup } from "@/shadcn/kbd";
 import type { Notification } from "@/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function NotificationsContent({
-  notifications: initialNotifications,
   isOpen,
   userId,
 }: {
-  notifications: Notification[];
+  notifications?: Notification[];
   isOpen?: boolean;
   userId: string;
 }) {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const queryClient = useQueryClient();
   const [refreshPending, startTransition] = useTransition();
 
   const [readState, readAction, readIsPending] = useActionState(
     markNotificationAsRead,
     null,
   );
-
   const [markAllState, markAllAction, markAllIsPending] = useActionState(
     markAllNotificationsAsRead,
     null,
   );
 
+  const {
+    data: notifications = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["notifications", userId],
+    queryFn: () => getAllNotifications(userId),
+  });
+
+  const sortedNotifications = [...notifications].sort((a, b) => {
+    if (a.isRead === b.isRead) {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    return a.isRead ? 1 : -1;
+  });
+
   useEffect(() => {
     if (isOpen) {
-      startTransition(async () => {
-        const fresh = await getAllNotifications(userId);
-        setNotifications(fresh);
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", userId],
       });
     }
-  }, [isOpen, userId]);
+  }, [isOpen, queryClient, userId]);
 
   useEffect(() => {
     if (readState?.success || markAllState?.success) {
-      setNotifications((prev) =>
-        prev.map((notification) => ({
-          ...notification,
-          isRead: true,
-        })),
-      );
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", userId],
+      });
     }
 
     if (markAllState?.success) {
@@ -69,27 +80,23 @@ export default function NotificationsContent({
     if (readState?.success) {
       toast.success("Notification marked as read");
     }
-  }, [readState, markAllState]);
-
-  const sortedNotifications = [...notifications].sort((a, b) => {
-    if (a.isRead === b.isRead) return 0;
-    return a.isRead ? 1 : -1;
-  });
+  }, [readState, markAllState, queryClient, userId]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.shiftKey && e.key.toLowerCase() === "r") {
       e.preventDefault();
-      startTransition(async () => {
-        const fresh = await getAllNotifications(userId);
-        setNotifications(fresh);
+      startTransition(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["notifications", userId],
+        });
         toast.success("Notifications refreshed");
       });
     } else if (e.shiftKey && e.key.toLowerCase() === "a") {
       e.preventDefault();
-      startTransition(async () => {
-        const fresh = await getAllNotifications(userId);
-        setNotifications(fresh);
-        toast.success("All notifications marked as read");
+      startTransition(() => {
+        const form = new FormData();
+        form.append("userId", userId);
+        markAllAction(form);
       });
     }
   };
@@ -99,7 +106,7 @@ export default function NotificationsContent({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [userId]);
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -110,17 +117,17 @@ export default function NotificationsContent({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                className=""
                 disabled={refreshPending}
                 onClick={() => {
-                  startTransition(async () => {
-                    const fresh = await getAllNotifications(userId);
-                    setNotifications(fresh);
+                  startTransition(() => {
+                    queryClient.invalidateQueries({
+                      queryKey: ["notifications", userId],
+                    });
                     toast.success("Notifications refreshed");
                   });
                 }}
               >
-                {refreshPending ? <Spinner /> : <RotateCcw />}
+                {refreshPending || isLoading ? <Spinner /> : <RotateCcw />}
               </Button>
             </TooltipTrigger>
             <TooltipContent className="flex gap-2">
@@ -135,6 +142,7 @@ export default function NotificationsContent({
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={markAllIsPending}
                 onClick={() => {
                   startTransition(() => {
                     const form = new FormData();
@@ -153,7 +161,6 @@ export default function NotificationsContent({
               </KbdGroup>
             </TooltipContent>
           </Tooltip>
-          <button type="button" tabIndex={0} style={{ display: "none" }} />
         </div>
       </h2>
       {notifications.length > 0 ? (
@@ -186,7 +193,7 @@ export default function NotificationsContent({
                     {notification.message}
                   </div>
                 </div>
-                {notification.isRead ? null : (
+                {!notification.isRead && (
                   <form className="ml-auto" action={readAction}>
                     <input
                       type="hidden"

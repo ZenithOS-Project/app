@@ -68,21 +68,12 @@ export default function StartMenuPopoverContent({ user }: { user: User }) {
           </TooltipTrigger>
           <TooltipContent>Settings</TooltipContent>
         </Tooltip>
-        <Popover>
-          <PopoverTrigger>
-            <Avatar className="w-full hover:cursor-pointer">
-              <AvatarImage src={user ? user.avatar : ""} />
-              <AvatarFallback>
-                {user ? user.username?.charAt(0) : ""}
-              </AvatarFallback>
-            </Avatar>
-          </PopoverTrigger>
-          <PopoverContent className="w-fit">
-            <form action={logout}>
-              <Button variant="ghost">Sign out</Button>
-            </form>
-          </PopoverContent>
-        </Popover>
+        <Avatar className="w-full">
+          <AvatarImage src={user ? user.avatar : ""} />
+          <AvatarFallback>
+            {user ? user.username?.charAt(0) : ""}
+          </AvatarFallback>
+        </Avatar>
       </div>
       <Separator orientation="vertical" className="min-h-80" />
       {/* <div>test</div> */}
