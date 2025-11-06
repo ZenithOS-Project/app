@@ -8,7 +8,8 @@ This projects goal is to improve my personal skills in webdevelopment. Over the 
 
 ## Plans
 
-You can find my all my plans on my [Github Projects page](https://github.com/orgs/ZenithOS-Project/projects/1)
+You can find my all my plans on my [Github Projects page](https://github.com/orgs/ZenithOS-Project/projects/1).
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
