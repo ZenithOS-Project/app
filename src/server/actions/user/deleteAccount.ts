@@ -6,8 +6,6 @@ import { logout } from "@/actions/logout/logout";
 export async function deleteAccount() {
   const user = await getUser();
 
-  console.log("Deleting account for user:", user);
-
   if (!user) {
     throw new Error("User not found");
   }

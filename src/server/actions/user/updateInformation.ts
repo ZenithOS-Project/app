@@ -8,8 +8,6 @@ export async function updateUserField(prevState: unknown, formData: FormData) {
   const value = formData.get("value") as string;
   const user = await withAuth({ ensureSignedIn: true });
 
-  console.log("Updating field:", field, "to value:", value);
-
   const { data, error } = await supabase
     .from("users")
     .update({ [field]: value, updatedAt: new Date() })

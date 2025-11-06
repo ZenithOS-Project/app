@@ -39,8 +39,6 @@ export default function WeatherApp() {
           lat: position.coords.latitude,
           lon: position.coords.longitude,
         });
-
-        console.log(position.coords.latitude, position.coords.longitude);
       });
     }
   }, []);
@@ -82,8 +80,6 @@ export default function WeatherApp() {
     const needed = 24 - displayHours.length;
     displayHours = [...displayHours, ...tomorrowHours.slice(0, needed)];
   }
-
-  console.log(weather);
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 p-4">
