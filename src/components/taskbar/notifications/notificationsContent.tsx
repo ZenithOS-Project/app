@@ -16,11 +16,11 @@ import { markNotificationAsRead } from "@/actions/notifications/markAsRead";
 import { useActionState, useEffect, useTransition } from "react";
 import { Spinner } from "@/shadcn/spinner";
 import { toast } from "sonner";
-import { getAllNotifications } from "@/fetchers/notifications/getAllNotifications";
 import { markAllNotificationsAsRead } from "@/actions/notifications/markAllAsRead";
 import { Kbd, KbdGroup } from "@/shadcn/kbd";
 import type { Notification } from "@/types";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNotifications } from "@/hooks/useNotifications";
 
 export default function NotificationsContent({
   isOpen,
@@ -46,10 +46,7 @@ export default function NotificationsContent({
     data: notifications = [],
     isLoading,
     isError,
-  } = useQuery({
-    queryKey: ["notifications", userId],
-    queryFn: () => getAllNotifications(userId),
-  });
+  } = useNotifications(userId);
 
   const sortedNotifications = [...notifications].sort((a, b) => {
     if (a.isRead === b.isRead) {

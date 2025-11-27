@@ -1,6 +1,5 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shadcn/avatar";
-import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/shadcn/skeleton";
 import type { User } from "@/types";
 import { Separator } from "@/shadcn/separator";
@@ -14,20 +13,11 @@ import { updateUserField } from "@/actions/user/updateInformation";
 import { deleteAccount } from "@/actions/user/deleteAccount";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useUser } from "@/hooks/useUser";
 
 export default function AccountSettings() {
   const queryClient = useQueryClient();
-  const {
-    data: user,
-    isError,
-    isLoading,
-  } = useQuery<User>({
-    queryKey: ["user"],
-    queryFn: async () => {
-      const res = await fetch(`/api/user/me`);
-      return res.json();
-    },
-  });
+  const { data: user, isError, isLoading } = useUser();
 
   const [isUploading, setIsUploading] = useState(false);
 

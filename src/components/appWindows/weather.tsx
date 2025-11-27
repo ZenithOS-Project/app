@@ -1,14 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/shadcn/skeleton";
 import { Cloud, Wind, Droplets } from "lucide-react";
 import { useEffect, useState } from "react";
-
-interface Location {
-  lat: number;
-  lon: number;
-}
+import { useWeather, type Location } from "@/hooks/useWeather";
 
 const getWeatherIcon = (code: number, isDay: boolean) => {
   if (code === 1000) return "☀️";
@@ -43,17 +38,7 @@ export default function WeatherApp() {
     }
   }, []);
 
-  const { data: weather, isLoading } = useQuery({
-    queryKey: ["weather", location],
-    queryFn: async () => {
-      if (!location) return null;
-      const res = await fetch(
-        `https://api.weatherapi.com/v1/forecast.json?key=0314712e9b7d41449dd82505253110&q=${location.lat},${location.lon}&days=5&aqi=no`,
-      );
-      return res.json();
-    },
-    enabled: !!location,
-  });
+  const { data: weather, isLoading } = useWeather(location);
 
   if (isLoading || !weather) {
     return (
